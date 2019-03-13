@@ -10,7 +10,7 @@ Node.js >= 4.9.1
 ```
 
 ## Browser
-Or Browser with ES6 support (will work with 99% of users)
+Or Browser with ES6 support (will work with 95-99% of users)
 
 ```html
    <script src="https://cdn.jsdelivr.net/npm/serpstat-api-3/serpstat-api.js"></script>
