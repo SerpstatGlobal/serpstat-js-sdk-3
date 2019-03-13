@@ -54,7 +54,7 @@ api.userStats.left_lines automatically updated after each request.
 ### Use intermediate backend
 If you use SDK in browser you may want to hide you token. 
 You can use intermediate backend.
-Download backend.php [from Github respository](https://github.com/SerpstatGlobal/serpstat-sdk/) and config it.
+Download [backend.php](https://github.com/SerpstatGlobal/serpstat-js-sdk-3/blob/master/backend.php) and config it.
 
 ```javascript
 	var api = SerpstatAPI.init({
