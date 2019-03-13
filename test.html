@@ -1,0 +1,43 @@
+<script>
+	function test(){
+		var api = SerpstatAPI.init({
+			token   :'ENTER',
+			requestsPerSecond: 9
+		}).then(function(){
+			console.log(api.userStats.left_lines);
+		});
+		
+		
+		api.createTask('domain_keywords',{
+			limit : 100,
+			se    : 'g_us',
+			query : 'serpstat.com'
+		}).then(function(results){
+			console.log(results);
+		}).catch(function(err){
+			console.error(err);
+		});
+		
+		api.domainKeywords({
+			limit : 100,
+			se    : ['g_us','g_ru','g_ua'],
+			query : ['serpstat.com','netpeak.com']
+		}).then(function(results){
+			console.log(results);
+		}).catch(function(err){
+			console.error(err);
+		});     
+		
+		
+		api.domain_keywords({
+			limit : 2000,
+			se    : 'g_us',
+			query : 'serpstat.com'
+		}).then(function(results){
+			console.log(results);
+		}).catch(function(err){
+			console.error(err);
+		});
+	}	
+</script>
+<script src="serpstat-api.js?x=1" onload="test();"></script>
