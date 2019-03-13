@@ -1,7 +1,7 @@
 {
   "name": "serpstat-api-3",
   "description": "Serpstat API v3 SDK Node.js module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "keywords": [
     "serpstat",
     "api",

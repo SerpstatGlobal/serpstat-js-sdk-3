@@ -145,7 +145,7 @@ var SerpstatAPI = function(){
 			onePage  	: true,  // но лучше смотреть на total
 			maxRows     : 101,
 			noLimit     : true  			
-		},
+		},/*
 		competitors:{
 			category 	: "keyword",  
 			title    	: "Competitors",
@@ -159,7 +159,7 @@ var SerpstatAPI = function(){
 			info     	: "This report shows you ads copies that pop up for the queried keyword in Google paid search results.",
 			field    	: "hits",
 			sortable 	: ["region_queries_count","found_results","position","cost","concurrency","difficulty"]
-		},
+		},*/
 		url_keywords :{
 			title    	: "URL Organic Keywords",
 			info     	: "The report lists keywords that URL ranks for in Google search results.",
