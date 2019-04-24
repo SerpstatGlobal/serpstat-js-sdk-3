@@ -167,10 +167,10 @@ The minimum number of domains or urls that have this keyword.
 
 expend=false
 
-| keyword | cost | ... | domain1 | traff1 | ... | domain1 | traff2 | .. 
-| ------------ | ------------ |-------------- |-------------- |-------------- |-------------- |
-| key1 | 1.23 | ... | site1.com | 1000 | ... | site2.com | 2000 | .. 
-| key2 | 3.45 | ... | site1.com | 100 | ... | site2.com | 200 | .. 
+| keyword      | cost         | ...         | domain1     | traff1      | ...         | domain2      | traff2       | ... 
+| ------------ | ------------ |------------ |------------ |------------ |------------ | ------------ | ------------ | ------------ 
+| key1         | 1.23         | ...         | site1.com   | 1000        | ...         | site2.com    | 2000         | ... 
+| key2         | 3.45         | ...         | site1.com   | 100         | ...         | site2.com    | 200          | ... 
 
 
 expend=true
