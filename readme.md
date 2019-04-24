@@ -189,8 +189,8 @@ All methods has param remove_dublicates. When remove_dublicates=true SDK will de
 ##Domain
 In query list of domain
 
-|   name | info  | params |
-| ------------ | ------------ |
+|   name       | info         | params       
+| ------------ | ------------ | ------------ 
 |  [domain_info](https://serpstat.com/api/14-domain-summary-report-domaininfo/ "domain_info") | Domain Summary. This report provides you with the number of keywords domain uses in SEO and PPC, shows its online visibility and other metrics. | se, query
 |  [domain_history](https://serpstat.com/api/16-domain-summary-report-domainhistory/ "domain_history") | Domain Historical Data. This report provides you with the historical data on a domains number of keywords and visibility. | se, query, limit, offset
 |  [domain_keywords](http://https://serpstat.com/api/18-domain-organic-keywords-domainkeywords/ "domain_keywords") | Domain Organic Keywords. This report shows keywords a domain ranks for in Google top 100 search results. | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords
