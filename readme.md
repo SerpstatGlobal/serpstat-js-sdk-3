@@ -205,8 +205,8 @@ In query list of domain
 
 ##Keyword
 
-|   name |  info  | params |
-| ------------ | ------------ |
+|   name       | info         | params       
+| ------------ | ------------ | ------------ 
 |  [keyword](https://serpstat.com/api/29-phrase-match-keywords-keywords/ "keyword")  |  Phrase Match Keywords. This method uses a full-text search to find all keywords that match the queried term. For every keyword found you will see its volume, CPC, and level of competition.  | se, query, limit, offset, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
 | [keyword_info](http://https://serpstat.com/api/31-keyword-overview-keywordinfo/ "keyword_info") | Keyword overview. This report provides you with the keyword overview showing its volume, CPC and level of competition. | se, query
 | [suggestions](https://serpstat.com/api/33-keyword-search-suggestions-suggestions/ "suggestions") | These method lists autocomplete suggestions (Google Suggest) for the keyword you requested (they are found by the full-text search). | se, query
@@ -220,8 +220,8 @@ In query list of domain
 ##URL
 In query list of URLs
 
-|   name |  info  | params |
-| ------------ | ------------ |
+|   name       | info         | params       
+| ------------ | ------------ | ------------ 
 |  [url_keywords](https://serpstat.com/api/45-url-organic-keywords-urlkeywords/ "url_keywords") |  The report lists keywords that URL ranks for in Google search results.  | se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
 |  url_keywords_alt |  Alterative realization  of url_keywords | se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords
 |  url_competitors |  List of URL competitors. Shows the list of URLs that compete with a queried URL in organic search. | se, query, limit, offset
