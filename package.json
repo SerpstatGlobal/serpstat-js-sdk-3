@@ -1,14 +1,18 @@
 {
   "name": "serpstat-api-3",
   "description": "Serpstat API v3 SDK Node.js module",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "keywords": [
     "serpstat",
     "api",
     "sdk",
     "seo",
     "keywords",
-    "domain"
+    "domain",
+    "internet marketing",
+    "competitors research",
+    "keyword analysis",
+    "search analitics"
   ],
   "license": "MIT",
   "author": {

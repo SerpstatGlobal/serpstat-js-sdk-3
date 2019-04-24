@@ -1,0 +1,23 @@
+    .serpstat-api-token-right .serpstat-api-token-res{
+        margin: 0px;
+        padding: .375rem  0;
+    }
+    .serpstat-api-se-right,
+    .serpstat-api-se-left textarea{
+        height: 120px
+    }
+    .serpstat-api-se-right{
+        overflow-y: scroll;
+    }
+    .serpstat-api-se-right li,
+    .serpstat-api-se-right ul{
+        list-style:none;
+        padding:0;
+        margin:0;
+    }
+    .serpstat-api-se-right ul{
+        padding-top:5px;
+    }
+    .serpstat-api-se-right li{
+        font-size: 0.8em;
+    }
