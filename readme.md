@@ -126,10 +126,10 @@ Methods get_top_urls, domains_intersection, domains_uniq_keywords can take up to
 The limit must be less than 1000 OR be divided by 1000: 1,2,3,...,999,1000,2000,3000, ...
 Not 1001, 2100, 5999. Offset must be be divided by 1000.
 
-##Downloaded rows > limit 
+## Downloaded rows > limit 
 If you enter few regions or se or use methods *_and_*  SDK can load more then limit rows.
 
-##keyword_top and limit
+## keyword_top and limit
 In keywords_top and keyword_top_and_info no limit parameteres. This methods can demand up to 101 rows per query and se combination.
 
  
@@ -161,7 +161,7 @@ Match urls keywords
 ### hits_from
 The minimum number of domains or urls that have this keyword.
 
-##expand
+## expand
 *_keywords_match_sdk and domains_intersection has expend param. It param intcrease result rows (not spend)  
 
 
@@ -185,8 +185,8 @@ expend=true
 ## remove_duplicates
 All methods has param remove_dublicates. When remove_dublicates=true SDK will delete dublicate rows
 
-#Methods
-##Domain
+# Methods
+## Domain
 In query list of domain
 
 |   name       | info         | params       
@@ -203,7 +203,7 @@ In query list of domain
 | domains_ad_keywords_match_sdk | Domain Ads keywords client-side comparison. Shows common Google Ads keywords of up to 9 domains. Local methods more expensive | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to,minus_domain, minus_domain_position_from, minus_domain_position_to, expand, hits_from
 | [get_top_urls](http://https://serpstat.com/api/261-gettopurls/ "get_top_urls") | Domain Top Pages. List of domain URLs sorted by potencial traffic. | se, query, limit, offset
 
-##Keyword
+## Keyword
 
 |   name       | info         | params       
 | ------------ | ------------ | ------------ 
@@ -217,7 +217,7 @@ In query list of domain
 | [competitors](https://serpstat.com/api/39-competitors-competitors/ "competitors") | The report lists all domains that rank for the given keyword in Google top 20 results. If you specify the keyword, the report lists all competitors for the given keyword in Google top 20 results. | se, query, limit, offset 
 | [ad_keywords](https://serpstat.com/api/41-advertising-report-adkeywords/ "ad_keywords") | This report shows you ads copies that pop up for the queried keyword in Google paid search results. |  se, query, limit, offset
 
-##URL
+## URL
 In query list of URLs
 
 |   name       | info         | params       
