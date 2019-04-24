@@ -109,6 +109,69 @@ For Node.js >= 7.6 you can use async/await
 	});
 	console.log(results)
 ```
+
+# Methods
+## Domain
+In query list of domain
+
+|   name       | info         | params       
+| ------------ | ------------ | ------------ 
+|  [domain_info](https://serpstat.com/api/14-domain-summary-report-domaininfo/ "domain_info") | Domain Summary. This report provides you with the number of keywords domain uses in SEO and PPC, shows its online visibility and other metrics. | se, query
+|  [domain_history](https://serpstat.com/api/16-domain-summary-report-domainhistory/ "domain_history") | Domain Historical Data. This report provides you with the historical data on a domains number of keywords and visibility. | se, query, limit, offset
+|  [domain_keywords](http://https://serpstat.com/api/18-domain-organic-keywords-domainkeywords/ "domain_keywords") | Domain Organic Keywords. This report shows keywords a domain ranks for in Google top 100 search results. | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords
+|  [domain_urls](http://https://serpstat.com/api/20-list-of-domains-urls-domainurls/ "domain_urls") | List of domain's URLs. Returns the list of URLs within the analyzed domain. Also, shows the number of keywords from top-100 for each URL. | se, query, limit, offset,
+| [domains_intersection](https://serpstat.com/api/22-domain-comparison-common-and-unique-keywords-domainsintersection-domainsuniqkeywords/http:// "domains_intersection") |  Shows common keywords of 2 or 3 domains | se, query, limit, offset, domains_combinations, expand
+| [domains_uniq_keywords](http://https://serpstat.com/api/65-domain-comparison-common-and-unique-keywords-domainsuniqkeywords/ "domains_uniq_keywords") |  Shows unique keywords of a domain. Keywords that queried domain has in common with Minus Domain are removed from the list. | se, query, limit, offset, cost_from, cost_to, concurrency_from, concurrency_to, minus_domain, domains_combinations
+| domains_keywords_match_sdk |  Domain keywords client-side comparison | se, query, limit, offset,  limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords, minus_domain, minus_domain_position_from, minus_domain_position_to, expand, hits_from
+| [competitors](http://https://serpstat.com/api/23-domain-competitors-in-organic-search-competitors/ "competitors") |  Domain Competitors in Organic Search | se, query, limit, offset
+| [ad_keywords](http://https://serpstat.com/api/66-advertising-report-adkeywords-but/ "ad_keywords") | Domain Advertising report.This report shows you ads copies that pop up for the queried keyword in Google paid search results. | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
+| domains_ad_keywords_match_sdk | Domain Ads keywords client-side comparison. Shows common Google Ads keywords of up to 9 domains. Local methods more expensive | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to,minus_domain, minus_domain_position_from, minus_domain_position_to, expand, hits_from
+| [get_top_urls](http://https://serpstat.com/api/261-gettopurls/ "get_top_urls") | Domain Top Pages. List of domain URLs sorted by potencial traffic. | se, query, limit, offset
+
+## Keyword
+
+|   name       | info         | params       
+| ------------ | ------------ | ------------ 
+|  [keyword](https://serpstat.com/api/29-phrase-match-keywords-keywords/ "keyword")  |  Phrase Match Keywords. This method uses a full-text search to find all keywords that match the queried term. For every keyword found you will see its volume, CPC, and level of competition.  | se, query, limit, offset, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
+| [keyword_info](http://https://serpstat.com/api/31-keyword-overview-keywordinfo/ "keyword_info") | Keyword overview. This report provides you with the keyword overview showing its volume, CPC and level of competition. | se, query
+| [suggestions](https://serpstat.com/api/33-keyword-search-suggestions-suggestions/ "suggestions") | These method lists autocomplete suggestions (Google Suggest) for the keyword you requested (they are found by the full-text search). | se, query
+| keywords_and_suggestions | Phrase Match Keywords and Suggestions. This method uses a full-text search to find all keywords and Google Autocomplete Suggestions that match the queried term. Join of 2 methods: keywords and suggestions. | se, query, limit, offset, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to |
+| [related_keywords](https://serpstat.com/api/35-related-keywords-relatedkeywords/ "related_keywords") | Return list of related keywords whose SERP is similar to requested keywords. Disabled on some subscribtion plans | se, query, limit, offset,weight
+| [keyword_top](https://serpstat.com/api/37-top-for-a-keyword-keywordtop/ "keyword_top") | This report shows you Google top 100 organic search results for the keyword you requested. |  se, query
+| keyword_top_and_info | This report shows you Google top 100 organic search results for the keyword you requested. Wuth additional columns: frequency, difficulty, traffic, ...  |  se, query
+| [competitors](https://serpstat.com/api/39-competitors-competitors/ "competitors") | The report lists all domains that rank for the given keyword in Google top 20 results. If you specify the keyword, the report lists all competitors for the given keyword in Google top 20 results. | se, query, limit, offset 
+| [ad_keywords](https://serpstat.com/api/41-advertising-report-adkeywords/ "ad_keywords") | This report shows you ads copies that pop up for the queried keyword in Google paid search results. |  se, query, limit, offset
+
+## URL
+In query list of URLs
+
+|   name       | info         | params       
+| ------------ | ------------ | ------------ 
+|  [url_keywords](https://serpstat.com/api/45-url-organic-keywords-urlkeywords/ "url_keywords") |  The report lists keywords that URL ranks for in Google search results.  | se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
+|  url_keywords_alt |  Alterative realization  of url_keywords | se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords
+|  [url_competitors](https://serpstat.com/api/47-list-of-urls-that-compete-with-a-queried-page-urlcompetitors/) |  List of URL competitors. Shows the list of URLs that compete with a queried URL in organic search. | se, query, limit, offset
+|  [url_missing_keywords](https://serpstat.com/api/49-competitors-keywords-that-are-missing-from-a-queried-page-urlmissingkeywords/ "url_missing_keywords") |  Shows a list of keywords that competitors URLs rank for in top-10 but that are missing from the queried page.. | se, query, limit, offset, queries_from, queries_to
+| url_keywords_and_missing | URL Organic and Missing Keywords.  The report lists keywords that URL and that competitors URLs ranks for in Google search results | se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
+| urls_keywords_match_sdk | URL keywords client-side comparison. Shows common keywords of up to 9 urls. Local methods more expensive |  se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, minus_domain, minus_domain_position_from, minus_domain_position_to, hits_from, expand
+
+#Integration with alaSQL
+```javascript
+//include and init SDK
+//include alasql
+
+api.patchAlasql(alasql);
+
+alasql.serpstatPromise('SELECT * FROM Serpstat("competitors",{"se":"g_us","query":"serpstat.com"} ').then(console.log);
+
+alasql.serpstatPromise(
+  'SELECT * FROM Serpstat("competitors",{"limit":2, "query" : "~GUI~",    \
+      "se"    : "<<<    --nested SQL request                                                    \
+          SELECT `db_name` FROM Serpstat("databases_info")                       \
+          WHERE (`db_name` LIKE "y_%")                                                         \
+          LIMIT 3                                                                                               \
+  >>>"})').then(console.log);
+```
+
 # Warnings
 ## Safari
 May not work on Safari
@@ -184,68 +247,6 @@ expend=true
 
 ## remove_duplicates
 All methods has param remove_dublicates. When remove_dublicates=true SDK will delete dublicate rows
-
-# Methods
-## Domain
-In query list of domain
-
-|   name       | info         | params       
-| ------------ | ------------ | ------------ 
-|  [domain_info](https://serpstat.com/api/14-domain-summary-report-domaininfo/ "domain_info") | Domain Summary. This report provides you with the number of keywords domain uses in SEO and PPC, shows its online visibility and other metrics. | se, query
-|  [domain_history](https://serpstat.com/api/16-domain-summary-report-domainhistory/ "domain_history") | Domain Historical Data. This report provides you with the historical data on a domains number of keywords and visibility. | se, query, limit, offset
-|  [domain_keywords](http://https://serpstat.com/api/18-domain-organic-keywords-domainkeywords/ "domain_keywords") | Domain Organic Keywords. This report shows keywords a domain ranks for in Google top 100 search results. | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords
-|  [domain_urls](http://https://serpstat.com/api/20-list-of-domains-urls-domainurls/ "domain_urls") | List of domain's URLs. Returns the list of URLs within the analyzed domain. Also, shows the number of keywords from top-100 for each URL. | se, query, limit, offset,
-| [domains_intersection](https://serpstat.com/api/22-domain-comparison-common-and-unique-keywords-domainsintersection-domainsuniqkeywords/http:// "domains_intersection") |  Shows common keywords of 2 or 3 domains | se, query, limit, offset, domains_combinations, expand
-| [domains_uniq_keywords](http://https://serpstat.com/api/65-domain-comparison-common-and-unique-keywords-domainsuniqkeywords/ "domains_uniq_keywords") |  Shows unique keywords of a domain. Keywords that queried domain has in common with Minus Domain are removed from the list. | se, query, limit, offset, cost_from, cost_to, concurrency_from, concurrency_to, minus_domain, domains_combinations
-| domains_keywords_match_sdk |  Domain keywords client-side comparison | se, query, limit, offset,  limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords, minus_domain, minus_domain_position_from, minus_domain_position_to, expand, hits_from
-| [competitors](http://https://serpstat.com/api/23-domain-competitors-in-organic-search-competitors/ "competitors") |  Domain Competitors in Organic Search | se, query, limit, offset
-| [ad_keywords](http://https://serpstat.com/api/66-advertising-report-adkeywords-but/ "ad_keywords") | Domain Advertising report.This report shows you ads copies that pop up for the queried keyword in Google paid search results. | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
-| domains_ad_keywords_match_sdk | Domain Ads keywords client-side comparison. Shows common Google Ads keywords of up to 9 domains. Local methods more expensive | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to,minus_domain, minus_domain_position_from, minus_domain_position_to, expand, hits_from
-| [get_top_urls](http://https://serpstat.com/api/261-gettopurls/ "get_top_urls") | Domain Top Pages. List of domain URLs sorted by potencial traffic. | se, query, limit, offset
-
-## Keyword
-
-|   name       | info         | params       
-| ------------ | ------------ | ------------ 
-|  [keyword](https://serpstat.com/api/29-phrase-match-keywords-keywords/ "keyword")  |  Phrase Match Keywords. This method uses a full-text search to find all keywords that match the queried term. For every keyword found you will see its volume, CPC, and level of competition.  | se, query, limit, offset, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
-| [keyword_info](http://https://serpstat.com/api/31-keyword-overview-keywordinfo/ "keyword_info") | Keyword overview. This report provides you with the keyword overview showing its volume, CPC and level of competition. | se, query
-| [suggestions](https://serpstat.com/api/33-keyword-search-suggestions-suggestions/ "suggestions") | These method lists autocomplete suggestions (Google Suggest) for the keyword you requested (they are found by the full-text search). | se, query
-| keywords_and_suggestions | Phrase Match Keywords and Suggestions. This method uses a full-text search to find all keywords and Google Autocomplete Suggestions that match the queried term. Join of 2 methods: keywords and suggestions. | se, query, limit, offset, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to |
-| [related_keywords](https://serpstat.com/api/35-related-keywords-relatedkeywords/ "related_keywords") | Return list of related keywords whose SERP is similar to requested keywords. Disabled on some subscribtion plans | se, query, limit, offset,weight
-| [keyword_top](https://serpstat.com/api/37-top-for-a-keyword-keywordtop/ "keyword_top") | This report shows you Google top 100 organic search results for the keyword you requested. |  se, query
-| keyword_top_and_info | This report shows you Google top 100 organic search results for the keyword you requested. Wuth additional columns: frequency, difficulty, traffic, ...  |  se, query
-| [competitors](https://serpstat.com/api/39-competitors-competitors/ "competitors") | The report lists all domains that rank for the given keyword in Google top 20 results. If you specify the keyword, the report lists all competitors for the given keyword in Google top 20 results. | se, query, limit, offset 
-| [ad_keywords](https://serpstat.com/api/41-advertising-report-adkeywords/ "ad_keywords") | This report shows you ads copies that pop up for the queried keyword in Google paid search results. |  se, query, limit, offset
-
-## URL
-In query list of URLs
-
-|   name       | info         | params       
-| ------------ | ------------ | ------------ 
-|  [url_keywords](https://serpstat.com/api/45-url-organic-keywords-urlkeywords/ "url_keywords") |  The report lists keywords that URL ranks for in Google search results.  | se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
-|  url_keywords_alt |  Alterative realization  of url_keywords | se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords
-|  url_competitors |  List of URL competitors. Shows the list of URLs that compete with a queried URL in organic search. | se, query, limit, offset
-|  [url_missing_keywords](https://serpstat.com/api/49-competitors-keywords-that-are-missing-from-a-queried-page-urlmissingkeywords/ "url_missing_keywords") |  Shows a list of keywords that competitors URLs rank for in top-10 but that are missing from the queried page.. | se, query, limit, offset, queries_from, queries_to
-| url_keywords_and_missing | URL Organic and Missing Keywords.  The report lists keywords that URL and that competitors URLs ranks for in Google search results | se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
-| urls_keywords_match_sdk | URL keywords client-side comparison. Shows common keywords of up to 9 urls. Local methods more expensive |  se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, minus_domain, minus_domain_position_from, minus_domain_position_to, hits_from, expand
-
-#Integration with alaSQL
-```javascript
-//include and init SDK
-//include alasql
-
-api.patchAlasql(alasql);
-
-alasql.serpstatPromise('SELECT * FROM Serpstat("competitors",{"se":"g_us","query":"serpstat.com"} ').then(console.log);
-
-alasql.serpstatPromise(
-  'SELECT * FROM Serpstat("competitors",{"limit":2, "query" : "~GUI~",    \
-      "se"    : "<<<    --nested SQL request                                                    \
-          SELECT `db_name` FROM Serpstat("databases_info")                       \
-          WHERE (`db_name` LIKE "y_%")                                                         \
-          LIMIT 3                                                                                               \
-  >>>"})').then(console.log);
-```
 
 # Browser Cases
 ## Use intermediate backend
