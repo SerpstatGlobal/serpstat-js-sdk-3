@@ -1,7 +1,7 @@
 {
   "name": "serpstat-api-3",
   "description": "Serpstat API v3 SDK Node.js module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "keywords": [
     "serpstat",
     "api",
@@ -12,24 +12,27 @@
     "internet marketing",
     "competitors research",
     "keyword analysis",
-    "search analitics"
+    "search analitics",
+    "link building",
+    "croud marketing"
   ],
   "license": "MIT",
-  "author": {
-    "name": "Andrey Belousoff",
-    "url": "https://github.com/hkey1/"
-  },
+  "author": "Andrey Belousoff (https://github.com/hkey1/)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SerpstatGlobal/serpstat-js-sdk-3"
+    "url": "git+https://github.com/SerpstatGlobal/serpstat-js-sdk-3.git"
   },
   "homepage": "https://github.com/SerpstatGlobal/serpstat-js-sdk-3",
   "engines": {
     "node": ">=4.9.1"
   },
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {},
+  "main": "./serpstat-api.js",
+  "bugs": {
+    "url": "https://github.com/SerpstatGlobal/serpstat-js-sdk-3/issues"
   },
-  "devDependencies": {
-  },
-  "main": "./serpstat-api.js"
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
 }

@@ -15,7 +15,7 @@ Node.js >= 4.9.1
 Or Browser with ES6 support (will work with 95-99% of users)
 
 ```html
-   <script src="https://cdn.jsdelivr.net/npm/serpstat-api-3/serpstat-api.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/serpstat-api-3@0.3/serpstat-api.js"></script>
 ```
 
 # Usage
@@ -127,6 +127,10 @@ In query list of domain
 | [ad_keywords](http://https://serpstat.com/api/66-advertising-report-adkeywords-but/ "ad_keywords") | Domain Advertising report.This report shows you ads copies that pop up for the queried keyword in Google paid search results. | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
 | domains_ad_keywords_match_sdk | Domain Ads keywords client-side comparison. Shows common Google Ads keywords of up to 9 domains. Local methods more expensive | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to,minus_domain, minus_domain_position_from, minus_domain_position_to, expand, hits_from
 | [get_top_urls](http://https://serpstat.com/api/261-gettopurls/ "get_top_urls") | Domain Top Pages. List of domain URLs sorted by potencial traffic. | se, query, limit, offset
+| grab_keywords_sdk | Grab Competitors keywords (client-side). Collects competitors keywords and finds URL for each keyword. | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords, url_prob_from, hits_from, your_domain
+| grab_urls_sdk | Grab Competitors URLs (client-side). Finds ideas for new URLs using the urls of competitors. Displays keywords for new urls and the expected traffic (traff_loss). Clusterize competitors URLs. | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords, url_prob_from, hits_from, your_domain, cluster_urls_from
+| find_urls_pairs_sdk | Finds pairs of pages on different sites that have the same theme (client-side). Designed to find options for linking pages for traffic and SEO. Finds relevant pairs of links donors and acceptors. | se, query, limit, offset, position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, keywords, minus_keywords, url_prob_from, hits_from, your_domain
+
 
 ## Keyword
 
@@ -154,7 +158,7 @@ In query list of URLs
 | url_keywords_and_missing | URL Organic and Missing Keywords.  The report lists keywords that URL and that competitors URLs ranks for in Google search results | se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to
 | urls_keywords_match_sdk | URL keywords client-side comparison. Shows common keywords of up to 9 urls. Local methods more expensive |  se, query, limit, offset,  position_from, position_to, queries_from, queries_to, cost_from, cost_to, concurrency_from, concurrency_to, minus_domain, minus_domain_position_from, minus_domain_position_to, hits_from, expand
 
-#Integration with alaSQL
+# Integration with alaSQL
 ```javascript
 //include and init SDK
 //include alasql
@@ -274,10 +278,10 @@ Controls dont not require other libs (as JQuery), but controls supports Bootstra
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.bundle.min.js" integrity="sha384-pjaaA8dDz/5BgdFUPX6M/9SUZv4d12SUPF0axWc+VRZkx5xU3daN+lYb49+Ax+Tl" crossorigin="anonymous"></script>
     <!--/bootstrap-->
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/serpstat-api-3@0.3/controls.css">
+    <script src="https://cdn.jsdelivr.net/npm/serpstat-api-3@0.3/serpstat-api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/serpstat-api-3@0.3/controls.js"></script>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/serpstat-api-3/controls.css">
-    <script src="https://cdn.jsdelivr.net/npm/serpstat-api-3/serpstat-api.js"></script>
-    <script src="controls.js"></script>
     <form style="padding:40px">
         <div class="form-group row" id="row-token">
             <label class="col-sm-2 col-form-label">Token</label>

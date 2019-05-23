@@ -1,23 +1,11 @@
 /*
-    Сафари предупреждение
-    Много строк пркдупреждение
+    В SDK методах при нулевом результате подсвечивать число строк
+    При нулевом результате писать сколько тотал (для SDK методов)
+    https://querybuilder.js.org/
 
-    Сократить длину URL
-    Ускорить большие таблицы в интефрйесе
-    Ускорить морф фильтры
-    Find landing
-    Old Browser Messages
     Cancel / Elapsed time
-    Падении при слишком большом числе ключей
     Разобраться с прогресс баром
-    Закончить доки.
-    Сортировку улучшить в SDK.
     Морф. анализ
-	TODO: 
-        cheap
-		JSON Export
-		SQL Export
-		export in google docs
     SQL по требованию грузить           
 */
 
@@ -105,7 +93,61 @@ var SerpstatAPI = function(){
             warnings    : [
                 'The number of useful results may be much lower than the spent API rows.',
                 'If the number of downloaded rows is less than the total rows in the Serpstat, then the results of the method may be unreliable.',
-            ],
+            ]
+		},{
+            report      : "Grab Keywords (SDK)",
+            nullDemand  : true, 
+            overDemand  : true, 
+            name        : 'grab_keywords_sdk',
+			category 	: "domain",  
+            sdk         : true,
+			title    	: "Grab Competitors keywords (client-side)",
+			info     	: "Collects competitors keywords and finds URL for each keyword. ",
+			field    	: "hits",
+			filters   	: ["position","queries","cost","concurrency","keywords","minus_keywords","hits_from","expand","your_domain","url_prob_from"],
+			sortable 	: ["traff","found_results","position","cost","concurrency"],
+            examples    : ['serpstat.com/blog/','serpstat.com,99signals.com'],
+            commaQuery  : false,
+            warnings    : [
+                'The number of useful results may be much lower than the spent API rows.',
+                'If the number of downloaded rows is less than the total rows in the Serpstat, then the results of the method may be unreliable.',
+            ]
+		},{
+            report      : "Grab URLs (SDK)",
+            nullDemand  : true, 
+            overDemand  : true, 
+            name        : 'grab_urls_sdk',
+			category 	: "domain",  
+            sdk         : true,
+			title    	: "Grab Competitors URLs (client-side)",
+			info     	: "Finds ideas for new URLs using the urls of competitors. Displays keywords for new urls and the expected traffic (traff_loss). Clusterize competitors URLs.",
+			field    	: "hits",
+			filters   	: ["position","queries","cost","concurrency","keywords","minus_keywords","hits_from","expand","your_domain","url_prob_from","cluster_urls_from"],
+			sortable 	: ["traff","found_results","position","cost","concurrency"],
+            examples    : ['serpstat.com/blog/','serpstat.com,99signals.com'],
+            commaQuery  : false,
+            warnings    : [
+                'The number of useful results may be much lower than the spent API rows.',
+                'If the number of downloaded rows is less than the total rows in the Serpstat, then the results of the method may be unreliable.',
+            ]
+		},{
+            report      : "Find URLs pairs (SDK)",
+            nullDemand  : true, 
+            overDemand  : true, 
+            name        : 'find_urls_pairs_sdk',
+			category 	: "domain",  
+            sdk         : true,
+			title    	: "Finds pairs of pages on different sites that have the same theme (client-side)",
+			info     	: "Designed to find options for linking pages for traffic and SEO. Finds relevant pairs of links donors and acceptors.",
+			field    	: "hits",
+			filters   	: ["position","queries","cost","concurrency","keywords","minus_keywords","expand","your_domain","url_prob_from"],
+			sortable 	: ["traff","found_results","position","cost","concurrency"],
+            examples    : ['serpstat.com/blog/','serpstat.com,99signals.com'],
+            commaQuery  : false,
+            warnings    : [
+                'The number of useful results will be much lower (3-300 times) than the spent API rows.',
+                'If the number of downloaded rows is less than the total rows in the Serpstat, then the results of the method may be unreliable.',
+            ]
         },{
             report      : "Competitors",
             name        : 'competitors',
@@ -316,6 +358,96 @@ var SerpstatAPI = function(){
     var methods      = {};
 	var methodsByCat = {};
 	var utils = {
+        deleteProtocol:function(str){
+            if(!str || !str.split){
+                return str;
+            }
+            return str
+                    .split('http://').join('')
+                    .split('https://').join('')
+                    .split('HTTP://').join('')
+                    .split('HTTPS://').join('');
+        },
+        dataReductionCache:{},
+        dataReduction:function(n,clasterProb){ // расчет снижение объема данных из-за кластерности 
+            var arr = utils.dataReductionCache[clasterProb];
+            if(!arr){
+                arr     = [0,1];
+                var cur = 1;
+                for(var i=2;i<=10000;i++){
+                    cur += Math.pow(1-clasterProb,cur);
+                    arr.push(cur);
+                }
+                utils.dataReductionCache[clasterProb] = arr;
+            }
+            return arr[n<10000 ? n : 10000];
+        },
+        position2relevance:function(position){
+            return 1/(position + 2);
+        },
+        relevance2position:function(relevance){
+            return (1/relevance) - 2;
+        },
+        position2ctr:function(position){
+            var lower = Math.floor(position);
+            var delta = position - lower;
+            if(lower===0){
+                return SerpstatAPI.ctrByPos[1];
+            } else if(lower>20){
+                return 0; 
+            }
+            return (1-delta)*SerpstatAPI.ctrByPos[lower] + delta*SerpstatAPI.ctrByPos[lower+1];
+        },
+        relevance2ctr: function(relevance){
+            return utils.position2ctr(utils.relevance2position(relevance));
+        },
+        calcRelevancyRate: function(trials,ariori=1,pseudoTrials=2){
+            var rate = pseudoTrials*ariori; 
+            var inv  = pseudoTrials/ariori; 
+            for(var i=0;i<trials.length;i++){
+                var cur   = trials[i];
+                var rel0  = utils.position2relevance(cur.position0);
+                var rel   = utils.position2relevance(cur.position);
+                rate     += rel0/rel; 
+                inv      += rel/rel0; 
+            }
+            var den = trials.length + pseudoTrials;
+            rate   /= den;
+            inv    /= den;
+            var res = 0.5*rate + 0.5/inv;
+            return res;
+        },            
+        calcUrlMatchProb:function(data){
+            var param         = data.param || 2;                 // коеф. индукции СЯ (параметр больший 1). Чем больше тем больше вероятность (если пересечение не полное)  
+            var clasterProb   = (data.clasterProbPrc || 10)/100; // вероятность того, что случайный ключ  принадлежит случайному кластеру (если ключ и кластер принаждлежет одной странице)
+            var urls1         = data.urls1;                      // число урлов сайта 1   
+            var urls2         = data.urls2;                      // число урлов сайта 2  
+            var dKeys1        = data.dKeys1;                     // число ключей сайта 1
+            var dKeys2        = data.dKeys2;                     // число ключей сайта 2  
+            var dKeysX        = data.dKeysX;                     // число пересекающихся ключей у сайтов
+            var uKeys1        = data.uKeys1;                     // число ключей страницы 1
+            var uKeys2        = data.uKeys2;                     // число ключей страницы 2  
+            var uKeysX        = data.uKeysX;                     // число пересекающихся ключей у страниц
+            
+            var uKeys1p2 = uKeys1 + uKeys2 - uKeysX; //общие ключи страниц (без учета дублей)
+            var uKeys1m2 = uKeys1 - uKeysX;          //уникальные ключи первой страницы 
+            var uKeys2m1 = uKeys2 - uKeysX;          //уникальные ключи второй страницы
+            var dKeys1p2 = dKeys1 + dKeys2 - dKeysX; //общие ключи доменов (без учета дублей)
+
+            var apriori   = 1 //Оценка вер. того, что две случайные страницы доменов имеют одинаковую семантику.
+                            * Math.min(urls1,urls2) 
+                            * (dKeysX/Math.min(dKeys1,dKeys2))
+                            / (urls1*urls2);       
+            var aposteori = apriori;
+            if(uKeys1 && uKeys2){
+                var sum = Math.log(1-apriori) - Math.log(apriori)
+                        + utils.dataReduction(uKeysX   , clasterProb) * (Math.log(uKeys1p2)                  - Math.log(dKeys1p2))
+                        + utils.dataReduction(uKeys1m2 , clasterProb) * (Math.log(1-uKeys2/(param*dKeys1p2)) - Math.log(1-uKeys2/(param*uKeys1p2)))
+                        + utils.dataReduction(uKeys2m1 , clasterProb) * (Math.log(1-uKeys1/(param*dKeys1p2)) - Math.log(1-uKeys1/(param*uKeys1p2)));
+                aposteori = 1/(Math.exp(sum)+1);
+            }
+            return aposteori;
+        },
 		unixTime: function SerpstatUnixTime(){
 			return Math.floor(Date.now()/1000);
 		},
@@ -420,9 +552,58 @@ var SerpstatAPI = function(){
             opts   = opts   || {};
             method = method || opts.method;
             query  = query  || opts.query;
-            var isCommaMethod = (method === 'domains_intersection'||method === 'domains_uniq_keywords');
+            var isCommaMethod     =  ( method === 'domains_intersection' || method === 'domains_uniq_keywords');
+            var isURLMethod       =  ( method === 'url_missing_keywords' || method === 'url_competitors' || method === 'url_keywords' || method==='url_keywords_and_missing' || method==='urls_keywords_match_sdk');
+            var haveKeysParam     =  ( method === 'domain_keywords'      
+                                    || method === 'domains_keywords_match_sdk' 
+                                    || method === 'grab_keywords_sdk' 
+                                    || method === 'grab_urls_sdk'
+                                    || method === 'find_urls_pairs_sdk'
+                                    || method === 'url_keywords_alt'
+                                ); 
+            
             if(typeof(query)==='string'){
-                if(method !== 'url_missing_keywords' && method!=='url_competitors' && method !== 'url_keywords' && method!=='url_keywords_and_missing' && method!=='urls_keywords_match_sdk'){
+                if(isURLMethod){
+                    query = query.trim().split('\n');
+                } else if(haveKeysParam){
+                    query     = query.trim().split('\n');
+                    var index = {}; 
+                    for(var i=0;i<query.length;i++){
+                        var cur = query[i].trim();
+                        if(!cur){
+                            continue;
+                        }
+                        cur = cur
+                            .split(' ,').join(',')
+                            .split(', ').join(',')
+                            .split(' ,').join(',')
+                            .split(', ').join(',')
+                            .split(' ,').join(',')
+                            .split(', ').join(',');
+                        cur      = cur.split(' ');
+                        var arr  = utils.Generator.getAllVariants(cur[0],{
+                            unic           : true,
+                            trim           : true,
+                            notEmpty       : true,
+                            limit          : 1000,
+                            enterSeparated : true,
+                            commaSeparated : true
+                        });
+                        cur.shift();
+                        var keys = utils.Generator.getAllVariants(cur.join(' '),{
+                            unic           : true,
+                            trim           : true,
+                            notEmpty       : true,
+                            limit          : 1000,
+                            enterSeparated : true,
+                            commaSeparated : true
+                        }).join(','); 
+                        for(var j=0;j<arr.length;j++){
+                            index[(arr[j] + ' ' + keys).trim()] = true;
+                        }
+                    }
+                    query = Object.keys(index);
+                } else {
                     query = utils.Generator.getAllVariants(query,{
                         ignoreEntersInBlocks:true,
                         unic:true,
@@ -432,8 +613,6 @@ var SerpstatAPI = function(){
                         enterSeparated:true,
                         commaSeparated:!isCommaMethod
                     });
-                } else {
-                    query = query.trim().split('\n');
                 }
             }
             
@@ -513,6 +692,25 @@ var SerpstatAPI = function(){
             && method === 'domains_intersection'){
                res = [res.join(',')];
             }
+            if(Array.isArray(res)){
+                if(method === 'domain_keywords' 
+                || method === 'domains_intersection'
+                || method === 'domain_info'
+                || method === 'domain_urls'
+                || method === 'domains_uniq_keywords'
+                || method === 'domains_keywords_match_sdk'
+                || method === 'grab_keywords_sdk'
+                || method === 'grab_urls_sdk'
+                || method === 'find_urls_pairs_sdk'
+                || method === 'domains_ad_keywords_match_sdk'
+                || method === 'get_top_urls'){
+                    for(var i=0; i<res.length; i++){
+                        if(res[i].trim){
+                            res[i] = utils.deleteProtocol(res[i].trim());
+                        }
+                    }
+                }
+            }
             return res;
         },
 		getMaxDemand: function serpstatGetMaxDemand(method,opts,query,se){
@@ -560,6 +758,9 @@ var SerpstatAPI = function(){
                 if(minuses && minuses.length && minuses[0]){
                     nSubtask += se.length;
                 }
+            }
+            if(method==='grab_keywords_sdk' || method==='grab_urls_sdk' || method==='find_urls_pairs_sdk'){
+                nSubtask += se.length;
             }
             if(method==='urls_keywords_match_sdk' && opts.minus_url){
                 if(Array.isArray(opts.minus_url)){
@@ -904,9 +1105,9 @@ var SerpstatAPI = function(){
                 return res; 
             }
             decompressRow(row){
-                var res = [];
-                for(var i=0;i<this.cols.length;i++){
-                    res[i] = row[this.cols[col]];
+                var res = {};
+                for(var col in this.cols){
+                    res[col] = row[this.cols[col]];
                 }
                 return res; 
             }
@@ -1117,7 +1318,7 @@ var SerpstatAPI = function(){
             expandDomains(){
                 if(this.compressed){
                     this.setCompression(false);
-                    var res = this.expand(); 
+                    var res = this.expandDomains(); 
                     this.setCompression(true);
                     return res;
                 }
@@ -1527,13 +1728,14 @@ var SerpstatAPI = function(){
                             'url7':1,'domain7':1,'url8':1,'domain8':1,'url9':1,'domain9':1,
                             'position':1,'my_position':1,'position1':1,'position2':1,'position3':1,'position4':1,'position5':1,'position6':1,'position7':1,'position8':1,'position9':1
     };
-
-    
+ 
     utils.Table.colsOrderArr = [
-        '_se','keyword','region_queries_count','cost','concurrency','queries_cost',
+        '_se','keyword','region_queries_count','cost','concurrency','queries_cost', 'keyword_urls',
         'type',
         'my_domain', 'my_subdomain',  'my_url',  'my_position',  'my_traff', 'my_dynamic', 'my_traff_cost', 
-        'domain'   , 'subdomain',  'url',  'intersected', 'not_intersected', 'relevance', 'our_relevance','position',  'traff', 'dynamic',  'traff_cost', 
+        'domain'   , 'subdomain',  'url',  'cluster_urls',
+        'intersected', 'not_intersected', 'relevance', 'our_relevance','position',  'traff', 'dynamic',  'traff_cost', 
+        'url_prob' , 'traff_loss', 'traff_cost_loss',
         'domain1'  , 'subdomain1', 'url1', 'position1', 'traff1','dynamic1', 'traff_cost1', 
         'domain2'  , 'subdomain2', 'url2', 'position2', 'traff2','dynamic2', 'traff_cost2', 
         'domain3'  , 'subdomain3', 'url3', 'position3', 'traff3','dynamic3', 'traff_cost3', 
@@ -1543,6 +1745,7 @@ var SerpstatAPI = function(){
         'domain7'  , 'subdomain7', 'url7', 'position7', 'traff7','dynamic7', 'traff_cost7', 
         'domain8'  , 'subdomain8', 'url8', 'position8', 'traff8','dynamic8', 'traff_cost8', 
         'domain9'  , 'subdomain9', 'url9', 'position9', 'traff9','dynamic9', 'traff_cost9', 
+        
         'cnt',
         'title','text',
         "organic_keywords","facebook_shares","linkedin_shares","google_shares","potencial_traff",
@@ -1676,7 +1879,6 @@ var SerpstatAPI = function(){
                     total      : keyTop.total,
                     downloaded : keyTop.downloaded,
                 });
-                //return keyTop;
             });
 		}
         _keywords_and_suggestions(opts){
@@ -1714,6 +1916,629 @@ var SerpstatAPI = function(){
             opts.base_method = 'ad_keywords';
             return this._domains_keywords_match_sdk(opts);
         }
+
+        __grab_prepare(opts0, isGrabKeywords, cb){
+            opts                  = utils.clone(opts0);
+            opts.pluses           = utils.normalizeQuery(opts.query,'domains_keywords_match_sdk', opts);   
+            opts.hits_from        = opts.hits_from || 1;
+            opts.your_domain      = utils.deleteProtocol(opts.your_domain.trim());
+            opts.url_prob_from    = ((opts.url_prob_from  || opts.url_prob_from===0|| opts.url_prob_from==='0') ? 1*opts.url_prob_from : 50)/100;
+            
+            if(!opts.your_domain || !opts.pluses || !opts.pluses.length){
+                return new Promise(function(resolve,reject){
+                    setTimeout(function(){
+                        reject(new Error('Params query and your_domain required in grab_keywords_sdk'));
+                    },1);
+                });
+            }
+            var tasks   = []; 
+            for(var i=-1; i<opts.pluses.length; i++){
+                tasks.push(this.domain_keywords(utils.extend(opts,{
+                    method            : 'domain_keywords',
+                    query             : i===-1 ? opts.your_domain : opts.pluses[i],
+                    hits_from         : undefined,
+                    your_domain       : undefined,
+                    url_prob_from     : undefined,
+                    remove_duplicates : false,
+                    expand            : false
+                }))); 
+            }
+            return utils.joinTasks(tasks,(res)=>{
+                var total      = 0;
+                var downloaded = 0;
+                for(var i=0;i<res.length;i++){
+                    total      += res[i].total;
+                    downloaded += res[i].downloaded;
+                }
+                
+                var index         = {}; 
+                var domains       = [];
+                var urlCrosses    = {};
+                
+                for(var i=0;i<res.length;i++){
+                    var keys   = res[i].sort(function(a,b){return a.position - b.position});
+                    var domain = {
+                        urls      : {},
+                        index     : {},
+                        crosses   : [],
+                        urlsCount : 0,
+                        unicKeys  : 0,
+                        domain    : false
+                    };
+                    for(var d0=0;d0<domains.length;d0++){
+                        domain.crosses.push([]);
+                    }
+                    
+                    domains.push(domain);    
+                    for(var j=0; j<keys.length;j++){
+                        var key = keys[j];
+                        domain.domain = domain.domain || key.domain; 
+                        if(key.first_position && key.first_position!==key.position && opts.your_domain!= domain.domain){
+                            continue;
+                        }
+                        var cs  = key.keyword+' <|> '+key._se;
+                        var url = key.url;
+                        if(!index[cs]){
+                            index[cs] = {
+                                url      : null,  //посадочная страница
+                                urls     : {},    //список альтернативных посадочных страниц
+                                domains  : {},    //список доменов на которых присутствует
+                                hits     : 0,     //число уник. доменов (кроме нашего)
+                                traff    : 0,       
+                                position : null,  
+                                url_prob : 0,      //вероятность того, что урла выбран верно
+                                data     : key   
+                            };
+                        }
+                        var entry    = index[cs];
+                        if(i===0){
+                            entry.traff += key.traff  || 0;
+                            if(!entry.position || entry.position>key.position){
+                                entry.url       = url;
+                                entry.domain    = key.domain;
+                                entry.subdomain = key.subdomain;
+                                entry.position  = key.position;
+                            }
+                        } else if(!entry.domains['d'+j]){
+                            entry.hits++;
+                        }
+                        entry.domains['d'+j] = true;
+                        
+                        if(!domain.index[cs]){
+                            domain.index[cs] = {
+                                urls      : [],
+                                key       : key,
+                                position  : key.position
+                            };
+                            domain.unicKeys  ++;
+                            for(var d0=0;d0<i;d0++){
+                                if(d0!==i && domains[d0].index[cs]){
+                                    var cross = {
+                                        position  : domain.index[cs].position,
+                                        position0 : domains[d0].index[cs].position,
+                                        key       : key
+                                    };
+                                    domain.crosses[d0].push(cross);
+                                    domains[d0].crosses[i] = domains[d0].crosses[i] || [];
+                                    domains[d0].crosses[i].push(cross);
+                                }
+                            }
+                        }
+                        domain.index[cs].urls.push(url);
+                        if(domain.index[cs].position > key.position){
+                            domain.index[cs].position = key.position;
+                        }
+                        if(!domain.urls[url]){
+                            domain.urlsCount++;
+                            domain.urls[url] = {
+                                keys     : [],
+                                index    : {},
+                                unicKeys : 0
+                            };
+                        }
+                        domain.urls[url].keys.push(key);
+                        if(!domain.urls[url].index[cs]){
+                            domain.urls[url].index[cs] = key;
+                            domain.urls[url].unicKeys ++;
+                            for(var d0=0;d0<i;d0++){
+                                if(i!==d0 && domains[d0].index[cs]){
+                                    for(var k=0; k<domains[d0].index[cs].urls.length; k++){
+                                        var url0   = domains[d0].index[cs].urls[k];
+                                        var urlsCs = url0+' <|> '+url;
+                                        if(url0 === url){
+                                            continue;
+                                        }
+                                        urlCrosses[urlsCs] = urlCrosses[urlsCs] ||{
+                                            url     : url,
+                                            url0    : url0,
+                                            uLink   : domain.urls[url],
+                                            uLink0  : domains[d0].urls[url0],
+                                            dLink   : domain,
+                                            dLink0  : domains[d0],
+                                            keys    : domain.urls[url].keys,
+                                            keys0   : domains[d0].urls[url0].keys,
+                                            domain0 : d0,
+                                            domain  : i,
+                                            crosses : [],
+                                            prob    : 0
+                                        };
+                                        urlCrosses[urlsCs].crosses.push({
+                                            position  : domain.index[cs].position,
+                                            position0 : domains[d0].index[cs].position,
+                                            key       : key
+                                        });
+                                    }
+                                }
+                                if(isGrabKeywords){
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                for(var i=1;i<domains.length;i++){
+                   domains[i].relevancyRate = utils.calcRelevancyRate(domains[i].crosses[0]);
+                }
+                for(var tmp in urlCrosses){
+                    var cross  = urlCrosses[tmp];
+                    cross.prob = utils.calcUrlMatchProb({
+                        urls1  : cross.dLink.urlsCount,
+                        urls2  : cross.dLink0.urlsCount,
+                        dKeys1 : cross.dLink.unicKeys,
+                        dKeys2 : cross.dLink0.unicKeys,
+                        dKeysX : cross.dLink.crosses[cross.domain0].length,
+                        uKeys1 : cross.uLink.unicKeys,
+                        uKeys2 : cross.uLink0.unicKeys,
+                        uKeysX : cross.crosses.length
+                    });
+                }        
+                var traffByUrl     = {};
+                var traffCostByUrl = {};
+                for(var i=0;i<res.length;i++){
+                    var keys = res[i];
+                    for(var j=0;j<keys.length;j++){
+                        var key = keys[j];
+                        traffByUrl[key.url]     = traffByUrl[key.url]     || 0;
+                        traffByUrl[key.url]    += key.traff               || 0;
+                        traffCostByUrl[key.url] = traffCostByUrl[key.url] || 0;
+                        traffCostByUrl[key.url]+= (key.traff * key.cost)  || 0;
+                    }
+                }
+                var table = cb(
+                    res,opts,
+                    total,downloaded,
+                    opts.hits_from,opts.your_domain, opts.url_prob_from,
+                    index, domains, urlCrosses, traffByUrl, traffCostByUrl
+                );
+                if(table[0] && table[0].traff_loss){
+                    table.sort(function(a,b){
+                        if(a.traff_loss !== b.traff_loss){
+                            return b.traff_loss           - a.traff_loss;
+                        } else {
+                            return b.region_queries_count - a.region_queries_count;
+                        }
+                    });
+                }
+                return new utils.Table({
+                    data       : table,
+                    total      : total,
+                    downloaded : downloaded
+                });
+            });
+        }
+        _find_urls_pairs_sdk(opts0){
+            return this.__grab_prepare(opts0,true,(
+                res,opts,
+                total,downloaded,
+                hits_from,your_domain,url_prob_from,
+                index, domains, urlCrosses, traffByUrl, traffCostByUrl
+            )=>{
+                var sort = function(a,b){
+                    if(a.key && b.key){
+                        a = a.key;
+                        b = b.key;
+                    }
+                    if(b.traff == a.traff){
+                        return b.region_queries_count - a.region_queries_count;
+                    } else {
+                        return b.traff - a.traff;
+                    }
+                };
+                var res = [];
+                for(var i in urlCrosses){
+                    var cross = urlCrosses[i]; 
+                    if(cross.prob >= url_prob_from && cross.url!==cross.url0){
+                        cross.crosses.sort(sort);
+                        cross.keys.sort(sort);
+                        cross.keys0.sort(sort);
+                        var row = {
+                            url            :  cross.url,
+                            url1           :  cross.url0,
+                            domain         :  cross.dLink.domain,
+                            subdomain      :  cross.keys[0].subdomain,
+                            subdomain1     :  cross.keys0[0].subdomain,
+                            url_prob       :  cross.prob * 100,
+                            traff          :  traffByUrl[cross.url],
+                            traff1         :  traffByUrl[cross.url0],
+                            traff_cost     :  traffCostByUrl[cross.url],
+                            traff_cost1    :  traffCostByUrl[cross.url0],
+                            intersect      :  cross.crosses.length,
+                            not_intersect  :  cross.keys.length  - cross.crosses.length,
+                            not_intersect1 :  cross.keys0.length - cross.crosses.length,
+                            all_intersect  : [],
+                            top_keyword    : cross.keys[0].keyword,
+                            top_keyword1   : cross.keys0[0].keyword,
+                            top_intersect_keyword: cross.crosses[0].key.keyword
+                        };
+                        for(var j=0;j<cross.crosses.length;j++){
+                            row.all_intersect.push(cross.crosses[j].key.keyword);
+                        }
+                        res.push(row);
+                    }
+                }
+                res.sort(function(a,b){
+                    return b.traff - a.traff;
+                });
+                return res;
+            });
+        }
+        _grab_urls_sdk(opts0){
+            opts0.your_domain_mode = opts0.your_domain_mode || 'exclude_urls';
+            var modeExclude     = (opts0.your_domain_mode === 'exclude');
+            var modeExcludeUrls = (opts0.your_domain_mode === 'exclude_urls');
+            var modeIgnore      = (opts0.your_domain_mode === 'ignore');
+            if(!modeExclude && !modeExcludeUrls && !modeIgnore){
+                return new Promise(function(resolve,reject){
+                    setTimeout(function(){
+                        reject(new Error('Param your_domain_mode must be equal: exclude or ignore or exclude_urls. Gain:'+opts0.your_domain_mode));
+                    },1);
+                });
+            }
+            var cluster_urls_from = opts0.cluster_urls_from || 1;
+            return this.__grab_prepare(opts0,false,(
+                res,opts,
+                total,downloaded,
+                hits_from,your_domain,url_prob_from,
+                index, domains, urlCrosses, traffByUrl, traffCostByUrl
+            )=>{
+                var clusters     = [];
+                var urlToCluster = {};
+
+                
+                urlCrosses = Object.values(urlCrosses);
+                urlCrosses.sort(function(a,b){
+                    return b.prob - a.prob;
+                });
+               
+                function addUrlToCluster(cluster,url){
+                    var traff = traffByUrl[url.url] || 0;
+                    if(!cluster.top_url_traff || cluster.top_url_traff<traff){
+                        cluster.top_url_traff = traff || 0;
+                        cluster.url           = url;
+                    }
+                    cluster.traff        += traff || 0;
+                    urlToCluster[url.url] = cluster;
+                    cluster.wasDomain[url.domain] = url;
+                    cluster.byDomainNum[url.domainNum] = url;
+                    cluster.wasYourDomain = cluster.wasYourDomain || url.isInYourDomain; 
+                    cluster.urls.push(url); 
+                    return cluster;
+                }
+                function castCluster(url){
+                    if(urlToCluster[url.url]){
+                        return urlToCluster[url.url];
+                    }
+                    var cluster = {
+                        urls          : [],
+                        wasDomain     : {},
+                        byDomainNum   : [],
+                        traff         : 0
+                    };
+                    for(var i=0;i<res.length;i++){
+                        cluster.byDomainNum.push(null);    
+                    }
+                    addUrlToCluster(cluster,url)
+                    clusters.push(cluster);
+                }
+                function tryToJoin(url1,url2){
+                    var cluster1 = castCluster(url1);
+                    var cluster2 = castCluster(url2);
+                    
+                    for(var i = 0;i<cluster2.urls.length; i++){
+                        var url = cluster2.urls[i];
+                        if(cluster1.wasDomain[url.domain]){
+                            return false;
+                        }
+                    }
+                    cluster2.removed = true;
+                    for(var i = 0;i<cluster2.urls.length; i++){
+                        addUrlToCluster(cluster1,cluster2.urls[i])
+                    }
+                    return cluster1;
+                }
+                for(var i=0;i<res.length;i++){
+                    var keys = res[i];
+                    for(var j=0;j<keys.length;j++){
+                        var key = keys[j];
+                        castCluster({
+                            url: key.url, 
+                            domain: key.domain, 
+                            subdomain: key.subdomain,
+                            isInYourDomain : i===0,
+                            domainNum: i
+                        });
+                    }
+                }
+                for(var i=0;i<urlCrosses.length;i++){
+                    var cross  = urlCrosses[i];
+                    if(cross.prob < url_prob_from){
+                        break;
+                    }
+                    tryToJoin(
+                        {url: cross.url  , domain: cross.dLink.domain  , subdomain: cross.keys[0].subdomain  , isInYourDomain: cross.domain  ===0 ,  domainNum: cross.domain  },
+                        {url: cross.url0 , domain: cross.dLink0.domain , subdomain: cross.keys0[0].subdomain , isInYourDomain: cross.domain0 ===0 ,  domainNum: cross.domain0 }
+                    );
+                }
+                for(var i=0; i<clusters.length; i++){
+                    var cluster = clusters[i]; 
+                    cluster.removed = cluster.removed 
+                                    || (modeExcludeUrls && cluster.byDomainNum[0])
+                                    || ((cluster.urls.length - (cluster.byDomainNum[0] ? 1 : 0)) < cluster_urls_from);
+                }
+                function keyCs(key){
+                    return key.keyword+' <|> '+key._se; 
+                }
+                var excludeKeys   = modeExclude || modeExcludeUrls;
+                var keyToClusters = {};
+                var keyToData     = {};
+                var keyUrlIndex   = {};
+                for(var i=1;i<res.length;i++){
+                    var keys = res[i];
+                    for(var j=0;j<keys.length;j++){
+                        var key = keys[j];
+                        var cs  = key.keyword+' <|> '+key._se;
+                        if(excludeKeys && domains[0].index[cs]){
+                            continue;
+                        }
+                        keyToData[cs] = key;
+                        var cluster = urlToCluster[key.url];
+                        keyToClusters[cs] = keyToClusters[cs] || [];
+                        keyToClusters[cs].push(cluster);
+                        keyUrlIndex[cs] = keyUrlIndex[cs] || {};
+                        if(!keyUrlIndex[cs][key.url]){
+                            keyUrlIndex[cs][key.url] = {
+                                key        : key,
+                                traff      : key.traff,
+                                traff_cost : key.traff_cost,
+                                position   : key.position
+                            };
+                        } else {
+                            var entry = keyUrlIndex[cs][key.url];
+                            if(entry.position  > key.position){
+                                entry.position = key.position;
+                            }
+                            entry.traff      += key.traff;
+                            entry.traff_cost += key.traff_cost;
+                        }
+                    }
+                }
+                var table = [];
+                for(var cs in keyToClusters){
+                    var keyClusters = keyToClusters[cs];
+                    var cluster = keyClusters[0];
+                    for(var i=1;i<keyClusters.length;i++){
+                        if(cluster.urls.length  <  keyClusters[i].urls.length
+                        ||(cluster.urls.length === keyClusters[i].urls.length && cluster.removed)){
+                            cluster = keyClusters[i];
+                        }
+                    }
+                    if((cluster.removed) || (excludeKeys && domains[0].index[cs])){
+                        continue;
+                    }
+                    var data = keyToData[cs];
+                    var row  = {
+                        _se                       : data._se,
+                        _query                    : data._query,
+                        keyword                   : data.keyword,
+                        keyword_length            : data.keyword_length,
+                        found_results             : data.found_results, 
+                        keyword_id                : data.keyword_id, 
+                        keyword_crc               : data.keyword_crc, 
+                        cost                      : data.cost, 
+                        queries_cost              : data.queries_cost, 
+                        concurrency               : data.concurrency, 
+                        difficulty                : data.difficulty,
+                        region_queries_count      : data.region_queries_count, 
+                        region_queries_count_wide : data.region_queries_count_wide, 
+                        region_queries_count_last : data.region_queries_count_last,
+                        types                     : data.types,
+                        geo_names                 : data.geo_names,
+                        right_spelling            : data.right_spelling,
+                        url                       : cluster.url.url,
+                        cluster_urls              : cluster.urls.length,
+                        traff                     : 0,
+                        traff_cost                : 0,
+                        keyword_urls              : 0
+                    };
+                    
+                    var loss_traff_sum = 0;
+                    var loss_traff_den = 0;
+                    var e_position_sum = 0;
+                        
+                    for(var i=0;i<cluster.byDomainNum.length;i++){
+                        var url = cluster.byDomainNum[i];
+                        if(url){
+                            row['url'+i]       = url.url;
+                            row['domain'+i]    = url.domain;
+                            row['subdomain'+i] = url.subdomain;
+                            
+                            var pdata = keyUrlIndex[cs][url.url];
+                            if(pdata){
+                                if(i!==0){
+                                    var ctr     = utils.relevance2ctr(domains[i].relevancyRate * utils.position2relevance(pdata.position));
+                                    var ctr0    = row.position0 ? utils.position2ctr(row.position0) : 0;
+                                    
+                                    loss_traff_sum   += (ctr-ctr0)*row.region_queries_count/100;
+                                    e_position_sum   += utils.relevance2position(domains[i].relevancyRate * utils.position2relevance(pdata.position));
+                                    loss_traff_den   += 1;
+                                }
+                                row['traff'+i]      = pdata.traff;
+                                row['position'+i]   = pdata.position;
+                                row['traff_cost'+i] = pdata.traff_cost;
+                                
+                                row.traff          += pdata.traff; 
+                                row.traff_cost     += pdata.traff_cost;
+                                
+                                row.keyword_urls++;
+                            } else {
+                                row['traff'+i]      = 0;
+                                row['traff_cost'+i] = 0;
+                            }
+                        }
+                    }
+                    if(row.keyword_urls < hits_from){
+                        continue;
+                    }
+                    row.traff_loss      = loss_traff_sum/loss_traff_den;
+                    row.e_position      = e_position_sum/loss_traff_den;
+                    row.traff_cost_loss = row.traff_loss * row.cost;
+                    table.push(row);
+                } 
+                return table;
+            });
+        }        
+        _grab_keywords_sdk(opts0){
+            opts0.your_domain_mode = opts0.your_domain_mode || 'include';
+            var modeExclude = (opts0.your_domain_mode === 'exclude');
+            var modeInclude = (opts0.your_domain_mode === 'include');
+            var modeIgnore  = (opts0.your_domain_mode === 'ignore');
+            if(!modeExclude && !modeInclude && !modeIgnore){
+                return new Promise(function(resolve,reject){
+                    setTimeout(function(){
+                        reject(new Error('Param your_domain_mode must be equal: exclude or ignore or include. Gain:'+your_domain_mode));
+                    },1);
+                });
+            }
+            return this.__grab_prepare(opts0,true,(
+                res,opts,
+                total,downloaded,
+                hits_from,your_domain,url_prob_from,
+                index, domains, urlCrosses, traffByUrl, traffCostByUrl
+            )=>{
+                for(var tmp in urlCrosses){
+                    var cross  = urlCrosses[tmp];
+                    var relevancyRate = utils.calcRelevancyRate(cross.crosses,domains[cross.domain].relevancyRate);
+                    var wasKey = {};
+                    for(var j=0;j<cross.keys.length;j++){
+                        var key     = cross.keys[j];
+                        var cs      = key.keyword+' <|> '+key._se;
+                        if(wasKey[cs]){
+                            continue;
+                        } else {
+                            wasKey[cs] = true;
+                        }
+                        
+                        var entry  = index[cs];
+                        entry.loss_traff_sum = entry.loss_traff_sum || 0;
+                        entry.loss_traff_den = entry.loss_traff_den || 0;
+                        entry.e_position_sum = entry.e_position_sum || 0;
+                        
+                        var ctr  = utils.relevance2ctr(relevancyRate * utils.position2relevance(key.position));
+                        var ctr0 = entry.position ? utils.position2ctr(entry.position) : 0;
+                         
+                        entry.loss_traff_sum   += (ctr-ctr0)*key.region_queries_count/100;
+                        entry.e_position_sum   += utils.relevance2position(relevancyRate * utils.position2relevance(key.position));
+                        entry.loss_traff_den   += 1;
+
+                        
+                        if(!entry.urls[cross.url0]){
+                            entry.urls[cross.url0] = {
+                                url        :    cross.url0, 
+                                domain     :    cross.keys0[0].domain, 
+                                subdomain  :    cross.keys0[0].subdomain,
+                                url_prob   :    0
+                            };
+                        }
+                        entry.urls[cross.url0].url_prob = 1 - (1 - entry.urls[cross.url0].url_prob) * (1 - cross.prob); 
+                    }
+                }                 
+                var table = [];
+                for(var cs in index){
+                    var entry  = index[cs];
+                    
+                    var bestUrl = false;
+                    var maxProb = 0;
+                    for(var url in entry.urls){
+                        var cur = entry.urls[url];
+                        if(maxProb < cur.url_prob){
+                            maxProb = cur.url_prob;
+                            bestUrl = cur;
+                        }    
+                    }
+                    if(!entry.position){
+                        if(maxProb<url_prob_from){
+                            continue;
+                        }
+                        entry.url_prob = maxProb;
+                        if(bestUrl){
+                            entry.url       = bestUrl.url;
+                            entry.domain    = bestUrl.domain;
+                            entry.subdomain = bestUrl.subdomain;
+                        }
+                    } else if(bestUrl && bestUrl.url !== entry.url){
+                        entry.alt_url      = bestUrl.url;
+                        entry.alt_url_prob = 100 
+                                           * maxProb 
+                                           * (1-(entry.urls[entry.data.url] ? entry.urls[entry.data.url].url_prob : 0))  
+                                           * (1-1/Math.pow(entry.position,0.15));
+                    }
+                    
+                    if(entry.position && modeExclude) {
+                        continue;
+                    } else if(entry.position){
+                        var baseProb   = entry.urls[entry.url] ? (entry.urls[entry.url].url_prob || 0) : 0;
+                        entry.url_prob = 1 - (1-1/Math.pow(entry.position,0.15)) * (1-baseProb);
+                    }
+                    
+                    if(entry.hits<hits_from && (!entry.position || !modeInclude)){
+                        continue;
+                    }
+                        
+                    var key          = utils.clone(entry.data);
+                    key.url          = entry.url;
+                    key.domain       = entry.domain;
+                    key.subdomain    = entry.subdomain;
+                    key.url_prob     = entry.url_prob * 100;
+                    key.traff        = entry.traff;
+                    key.alt_url      = entry.alt_url;
+                    key.alt_url_prob = entry.alt_url_prob;
+                    
+                    
+                    
+                    if(entry.loss_traff_den){
+                        key.e_position      = entry.e_position_sum/entry.loss_traff_den;
+                    } else {
+                        key.e_position      = null;
+                    }
+                    if(entry.loss_traff_sum>0 && entry.loss_traff_den){
+                        key.traff_loss      = entry.loss_traff_sum/entry.loss_traff_den;
+                        key.traff_cost_loss = key.traff_loss * key.cost;
+                    } else {
+                        key.traff_loss      = 0;
+                        key.traff_cost_loss = 0;
+                    }   
+                    if(!entry.position){
+                        key.position   = null;
+                        key.dynamic    = null;
+                        key.traff      = 0;
+                        key.traff_cost = 0;
+                    }
+                    key._hits     = entry._hits;
+                    table.push(key);
+                }
+                return table;
+            });
+        }
         _domains_keywords_match_sdk(opts){
             opts.base_method = opts.base_method || 'domain_keywords';
             var pluses  = utils.normalizeQuery(opts.query,
@@ -1724,11 +2549,12 @@ var SerpstatAPI = function(){
             var tasks   = []; 
             for(var i=0; i<pluses.length; i++){
                 tasks.push(this[opts.base_method](utils.extend(opts,{
-                    method : opts.base_method,
-                    query  : pluses[i],
-                    minus_domain   : undefined,
-                    remove_duplicates: false,
-                    expand: false
+                    method            : opts.base_method,
+                    query             : pluses[i],
+                    hits_from         : undefined,
+                    minus_domain      : undefined,
+                    remove_duplicates : false,
+                    expand            : false
                 }))); 
             }
             var minuses  = [];
@@ -1755,6 +2581,7 @@ var SerpstatAPI = function(){
                     query          : minuses[i],
                     position_from  : opts.minus_domain_position_from,  
                     position_to    : opts.minus_domain_position_to,
+                    hits_from      : undefined,
                     minus_domain   : undefined,
                     remove_duplicates: false,
                     expand: false
@@ -1851,7 +2678,7 @@ var SerpstatAPI = function(){
                 return new utils.Table({
                     data       : table,
                     total      : total,
-                    downloaded : downloaded,
+                    downloaded : downloaded
                 });
             });
         }
@@ -1862,6 +2689,24 @@ var SerpstatAPI = function(){
 			} else {
 				opts = opts || {};
 			}
+            if(method === 'domain_keywords' 
+            || method === 'domains_intersection'
+            || method === 'domain_info'
+            || method === 'domain_urls'
+            || method === 'domains_uniq_keywords'
+            || method === 'domains_keywords_match_sdk'
+            || method === 'grab_keywords_sdk'
+            || method === 'grab_urls_sdk'
+            || method === 'find_urls_pairs_sdk'
+            || method === 'domains_ad_keywords_match_sdk'
+            || method === 'get_top_urls'){
+                if(opts && opts.minus_domain && opts.minus_domain.trim){
+                    opts.minus_domain = utils.deleteProtocol(opts.minus_domain.trim());
+                }    
+                if(opts && opts.your_domain  && opts.your_domain.trim){
+                    opts.your_domain  = utils.deleteProtocol(opts.your_domain.trim());
+                }    
+            }
             var expand  = opts.expand;
             var doubles = opts.remove_duplicates;
             delete opts.expand;
@@ -2296,10 +3141,18 @@ var SerpstatAPI = function(){
                 }
                 query = query.split(' '); 
                 for(var i=1;i<query.length;i++){
-                    if(query[i].trim()){
-                        keys.push(query[i].trim());
+                    var cur = query[i].trim();
+                    if(cur){
+                        if(cur[0]==='>'){
+                            this.opts.queries_from = 1*cur.substr(1);
+                        } else if(cur[0]==='<'){
+                            this.opts.position_to  = 1*cur.substr(1);
+                        } else {
+                            keys.push(cur);
+                        }
                     }
                 }
+                //
                 this.opts.keywords = keys.join(',').split(',,').join(',').split(',,').join(',').split(',,').join(',').trim();
                 query = query[0].trim();
                 if(!this.opts.keywords){
@@ -2568,8 +3421,13 @@ var SerpstatAPI = function(){
             var isAd         = this.method === 'ad_keywords';
             var isHistory    = this.method === 'domain_history';
             var isCompUrl    = this.method === 'url_competitors';
-            var isCompDomain = this.method === 'competitors'     && this.params.query.indexOf('.')!==-1;
+            var isCompDomain = this.method === 'competitors'   && this.params.query.indexOf('.')!==-1;
             var isUnicKeys   = this.method === 'domains_uniq_keywords';
+            var isMissing    = this.method === 'url_missing_keywords';
+            var isKeyInfo    = this.method === 'keyword_info' || this.method === 'keyword_top_and_info';
+            var isSiteInfo   = this.method === 'domain_info';
+            
+            
             var secondDomain = '';
             if(isUnicKeys){
                 var tmp = this.params.query.split(',');
@@ -2579,6 +3437,10 @@ var SerpstatAPI = function(){
             }
 			for(var i=0;i<pageData.length;i++){
 				var row = pageData[i];
+                
+                if(isMissing && !row.url){
+                    row.url = this.params.query;
+                }
 
 				if(typeof(row.region_queries_count) !== 'undefined' 
 				&& typeof(row.cost)                 !== 'undefined'  
@@ -2640,9 +3502,18 @@ var SerpstatAPI = function(){
             var containsAll = false;
 			if(this.subTask){
 				for(var i=0;i<pageData.length;i++){
-					pageData[i]._se    = this.subTask.se;
-					pageData[i]._query = this.subTask.query;
-                    pageData[i]._hits  = 1;
+                    var row = pageData[i];
+                    
+					row._se    = this.subTask.se;
+					row._query = this.subTask.query;
+                    row._hits  = 1;
+                    
+                    if(isKeyInfo && !row.keyword){
+                        row.keyword = this.subTask.query.trim().toLowerCase();
+                    }
+                    if(isSiteInfo && !row.domain){
+                        row.domain = this.subTask.query.trim().toLowerCase();
+                    }
 				}
                 containsAll = this.subTask.containsAll;
 			}
